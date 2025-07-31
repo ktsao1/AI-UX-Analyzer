@@ -1,0 +1,6 @@
+{
+  "name": "Copy of UI/UX Analyzer AI",
+  "description": "Upload an image of an application UI and get expert-level analysis on UX, accessibility, color palettes, and component structure powered by Google Gemini.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}
