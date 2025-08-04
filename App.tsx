@@ -1,4 +1,4 @@
-
+// Test comment for git
 import React, { useState, useCallback, useRef } from 'react';
 import { AnalysisType, PrototypeFlow, PrototypeNode, FlowAnalysisStep, Rect } from './types';
 import { ANALYSIS_OPTIONS } from './constants';
@@ -76,7 +76,7 @@ const getLocationKey = (childBox: Rect, parentBox: Rect): string => {
 
 const App: React.FC = () => {
   const [figmaUrl, setFigmaUrl] = useState<string>('');
-  const [figmaToken] = useState<string>('figd_8KKMSpgYHMWwtaizQLKqM9KZErlgPNugtsk7A5Mh'); // Replace with your Figma API token
+  const [figmaToken] = useState<string>('FIGMA API KEY'); // Replace with your Figma API token
   const [fileKey, setFileKey] = useState<string | null>(null);
   const [nodeMap, setNodeMap] = useState<Map<string, FigmaNode> | null>(null);
 
