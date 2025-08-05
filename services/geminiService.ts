@@ -28,7 +28,7 @@ export const analyzeImage = async (
         contents: { parts: [textPart, imagePart] },
     });
 
-    return response.text;
+    return response.text ?? "No response text received from Gemini.";
   } catch (error) {
     console.error("Error analyzing image:", error);
     if (error instanceof Error) {
@@ -53,7 +53,7 @@ export const generateFlowSusAnalysis = async (persona: string, challenge: string
             model: 'gemini-2.5-flash',
             contents: prompt,
         });
-        return response.text;
+        return response.text?? "No response text received from Gemini.";
     } catch (error) {
         console.error("Error generating SUS analysis:", error);
         if (error instanceof Error) {
