@@ -37,7 +37,7 @@ export function Results(p: Props) {
         </Sheet>
 
         <div className="plate pad" style={{ minWidth: 0 }}>
-          <h3 className="pixel" style={{ fontSize: 15, letterSpacing: '0.14em' }}>Analysis Summary</h3>
+          <h3 className="pixel" style={{ fontSize: 15 }}>Analysis Summary</h3>
           <div className="band">
             <div className="plate score">
               <span className="label">
@@ -88,7 +88,7 @@ export function Results(p: Props) {
               <div className="runs-table">
                 {p.results.map((r, i) => (
                   <button key={r.index} type="button" className="plate runrow" aria-pressed={i === p.selected} onClick={() => p.onSelect(i)}>
-                    <span className="pixel" style={{ fontSize: 11 }}>Run {r.index + 1}</span>
+                    <span style={{ fontWeight: 650 }}>Run {r.index + 1}</span>
                     <b>{r.status === 'completed' ? '✓ ' : '✕ '}{STATUS[r.status]}</b>
                     <span className="muted hide-s">{r.steps.length} steps</span>
                     <span className="muted hide-s">{formatDuration(r.durationMs)}</span>
@@ -141,7 +141,7 @@ export function Results(p: Props) {
       )}
 
       <div className="plate pad">
-        <h3 className="pixel" style={{ fontSize: 15, letterSpacing: '0.14em' }}>Step by step{many ? ` · run ${run.index + 1}` : ''}</h3>
+        <h3 className="pixel" style={{ fontSize: 15 }}>Step by step{many ? ` · run ${run.index + 1}` : ''}</h3>
         <div className="steps">
           {run.steps.map((s) => (
             <article className="stepcard" key={s.number}>

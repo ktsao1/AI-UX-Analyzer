@@ -18,7 +18,7 @@ export function TopBar({ busy, sample, model, onSettings, onHome }: { busy: Engi
         ) : (
           <>
             <span className="plate engine" data-on={busy.figma} data-busy={busy.figma}><FigmaMark /><span>Figma</span><Dots /></span>
-            <span className="plate engine" data-on={busy.gemini} data-busy={busy.gemini}><GeminiMark /><span>{model.replace(/-/g, ' ')}</span><Dots /></span>
+            <span className="plate engine" data-on={busy.gemini} data-busy={busy.gemini}><GeminiMark /><span>{model.replace(/-/g, ' ').replace(/\b[a-z]/g, (c) => c.toUpperCase())}</span><Dots /></span>
           </>
         )}
         <Button variant="ghost" size="small" onClick={onSettings}>Settings</Button>
