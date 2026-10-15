@@ -6,7 +6,7 @@ import { Results } from './components/Results';
 import { RunView, type LiveScreen } from './components/RunView';
 import { SettingsPanel } from './components/SettingsPanel';
 import { TopBar, type Engines } from './components/TopBar';
-import { DEMO_PROTOTYPE, demoImageUrl, demoScreens } from './demo/prototype';
+import { DEMO_PROTOTYPE, demoImageUrl, demoScreens, SCRIPTED_FLOW_START } from './demo/prototype';
 import { createDemoModel, DEMO_CHALLENGE } from './demo/script';
 import { parseFigmaUrl } from './lib/figmaUrl';
 import { EMPTY_PARAMETERS, labelOf, nameIn, parametersReady, patienceFor, PREDEFINED_PERSONAS } from './lib/personas';
@@ -132,7 +132,7 @@ export default function App() {
     screensRef.current = demoScreens;
     setPrototype(DEMO_PROTOTYPE);
     setThumbs(Object.fromEntries(Object.keys(DEMO_PROTOTYPE.screens).map((id) => [id, demoImageUrl(id)])));
-    setFlowIndex(0);
+    setFlowIndex(DEMO_PROTOTYPE.flows.findIndex((f) => f.startId === SCRIPTED_FLOW_START));
     setChallenge(DEMO_CHALLENGE);
     setPersonaMode('custom');
     setParams(SAMPLE_PARAMETERS);
@@ -205,7 +205,9 @@ export default function App() {
 
   // The furthest step the visitor may go to: the task needs a persona, and
   // the persona needs a flow to test.
-  const reachable = !flow ? 0 : !persona ? 1 : 2;
+  // The sample's session is pre-written for one flow, so only that one runs.
+  const flowRunnable = Boolean(flow) && (!sample || flow!.startId === SCRIPTED_FLOW_START);
+  const reachable = !flowRunnable ? 0 : !persona ? 1 : 2;
   const goToStep = (index: number) => {
     setError(null);
     stepMoved.current = true;
@@ -334,8 +336,8 @@ export default function App() {
             {prototype && (
               <StepNav
                 onNext={() => goToStep(1)}
-                canNext={Boolean(flow)}
-                hint={!flow && prototype.flows.length > 0 && 'Select a prototype flow to continue.'}
+                canNext={flowRunnable}
+                hint={!flow ? prototype.flows.length > 0 && 'Select a prototype flow to continue.' : !flowRunnable && 'Sample mode runs the Account settings flow only. Add your keys in Settings to test any flow.'}
               />
             )}
           </Chapter>

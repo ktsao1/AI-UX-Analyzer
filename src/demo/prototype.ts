@@ -17,6 +17,8 @@ const box = (x: number, y: number, width: number, height: number): Rect => ({ x,
 const to = (from: string, name: string, keywords: string[], b: Rect, screenId: string, labelled = true): Hotspot => ({
   id: `${from}:${name}`, name, keywords, labelled, box: b, target: { kind: 'screen', screenId },
 });
+/** The primary button at the foot of the onboarding and checkout screens. */
+const PRIMARY = box(36, 1040, 484, 96);
 const back = (from: string): Hotspot => ({
   id: `${from}:back`, name: 'Back', labelled: false, keywords: ['back', 'back arrow', 'back button'], box: box(34, 100, 44, 44), target: { kind: 'back' },
 });
@@ -51,9 +53,26 @@ export const DEMO_PROTOTYPE: Prototype = {
       id: 'saved', name: 'Account', box: screenBox,
       hotspots: [back('saved'), to('saved', 'Edit profile', ['edit profile'], box(36, 812, 484, 96), 'edit')],
     },
+    // Two more flows, so the file reads like a real one when its flows are
+    // shown. Each frame leads on from its primary button. The pre-written
+    // session walks Account settings only (`SCRIPTED_FLOW_START`).
+    welcome: { id: 'welcome', name: 'Welcome', box: screenBox, hotspots: [to('welcome', 'Get started', ['get started'], PRIMARY, 'signup')] },
+    signup: { id: 'signup', name: 'Sign up', box: screenBox, hotspots: [back('signup'), to('signup', 'Create account', ['create account'], PRIMARY, 'notify')] },
+    notify: { id: 'notify', name: 'Notifications', box: screenBox, hotspots: [] },
+    cart: { id: 'cart', name: 'Cart', box: screenBox, hotspots: [to('cart', 'Checkout', ['checkout'], PRIMARY, 'shipping')] },
+    shipping: { id: 'shipping', name: 'Shipping', box: screenBox, hotspots: [back('shipping'), to('shipping', 'Continue', ['continue'], PRIMARY, 'payment')] },
+    payment: { id: 'payment', name: 'Payment', box: screenBox, hotspots: [back('payment'), to('payment', 'Pay now', ['pay now'], PRIMARY, 'confirmed')] },
+    confirmed: { id: 'confirmed', name: 'Confirmed', box: screenBox, hotspots: [] },
   },
-  flows: [{ name: 'Account settings', startId: 'home' }],
+  flows: [
+    { name: 'Onboarding', startId: 'welcome' },
+    { name: 'Checkout', startId: 'cart' },
+    { name: 'Account settings', startId: 'home' },
+  ],
 };
+
+/** The one flow the sample's pre-written session walks. */
+export const SCRIPTED_FLOW_START = 'home';
 
 export const demoImageUrl = (screenId: string) => `${import.meta.env.BASE_URL}demo/${screenId}.webp`;
 
