@@ -122,6 +122,26 @@ textarea.field { resize: vertical; min-height: 76px; line-height: 1.4; }
 .chapter-head h2 { font-weight: 400; font-size: clamp(20px, 3vw, 30px); }
 .chapter-head p { color: var(--muted); max-width: 52ch; }
 
+/* Setup wizard: the step indicator and the Back / Next row under each step */
+.progress ol { list-style: none; margin: 8px 0 0; padding: 0; display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap; }
+.progress li { display: flex; align-items: center; gap: 10px; }
+.progress li + li::before { content: ''; width: 32px; height: 1px; background: var(--rule); }
+.progress-step { border: 0; background: none; padding: 6px 4px; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--muted); }
+.progress-step .chapter-no { --face: var(--chip); color: var(--muted); }
+.progress-step[data-state='current'] { color: var(--ink); }
+.progress-step[data-state='current'] .chapter-no { --face: var(--mark); color: var(--ink); }
+.progress-step[data-state='done'] .chapter-no { --face: var(--ink); color: #fff; }
+.progress-step:not(:disabled):not([data-state='current']):hover { color: var(--ink); }
+.progress-step:disabled { color: var(--faint); }
+.step-nav { max-width: 760px; margin: 28px auto 0; }
+.step-nav-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.step-nav-hint { margin-top: 10px; font-size: 14px; text-align: right; }
+.chapter-head h2:focus { outline: none; }
+.cast + .step-nav { max-width: none; }
+/* The indicator already numbers the step, so its chapter does not repeat it. */
+.progress ~ .chapter .chapter-head > .chapter-no { display: none; }
+.progress + .chapter { padding-top: 28px; }
+
 .notice { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; background: var(--wash); font-size: 15px; }
 .notice::before { content: ''; flex: none; width: 10px; height: 10px; margin-top: 7px; background: var(--mark); box-shadow: inset 0 0 0 2px var(--ink); }
 .error { --face: #fbe9e7; color: var(--danger); padding: 14px 16px; margin: 0 0 24px; font-weight: 500; }
@@ -167,7 +187,11 @@ textarea.field { resize: vertical; min-height: 76px; line-height: 1.4; }
 .stepper output { --face: var(--mark); min-width: 44px; text-align: center; padding: 8px 10px; font-weight: 700; }
 
 /* The run */
-.run { display: grid; grid-template-columns: minmax(0, 300px) auto minmax(0, 1fr); gap: 28px; align-items: start; }
+/* Two equal side columns keep the phone on the page's centre line; the
+   panels hug it and sit on its middle. */
+.run { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 28px; align-items: center; }
+.run > .sheet { justify-self: end; width: 100%; max-width: 320px; }
+.run > .talk { justify-self: start; width: 100%; max-width: 440px; }
 .sheet h3 { font-weight: 700; font-size: 22px; margin: 6px 0 10px; overflow-wrap: anywhere; }
 .sheet .tags { display: flex; flex-wrap: wrap; gap: 6px; }
 .sheet .challenge { font-size: 17px; font-weight: 600; line-height: 1.35; margin-top: 6px; }
@@ -213,7 +237,7 @@ textarea.field { resize: vertical; min-height: 76px; line-height: 1.4; }
 .decision-row p.key { color: var(--mark); }
 .gap-flag { --face: var(--mark); padding: 14px 16px; font-size: 15px; font-weight: 600; line-height: 1.35; }
 .gap-flag .label { color: var(--ink); display: block; margin-bottom: 4px; }
-.run-foot { margin-top: 40px; display: flex; justify-content: center; }
+.run-foot.actions { margin: 56px 0 40px; display: flex; justify-content: center; }
 
 /* 04 Results */
 .results { display: grid; gap: 24px; }
@@ -337,6 +361,7 @@ textarea.field { resize: vertical; min-height: 76px; line-height: 1.4; }
   .cast, .columns { grid-template-columns: minmax(0, 1fr); }
   .run { grid-template-columns: minmax(0, 1fr); justify-items: center; }
   .run > * { width: 100%; }
+  .run > .sheet, .run > .talk { justify-self: stretch; max-width: none; }
   .run > .phone { width: min(280px, 80%); }
   .bubble-tail { display: none; }
   .band { grid-template-columns: repeat(2, minmax(0, 1fr)); }

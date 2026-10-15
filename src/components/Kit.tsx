@@ -11,11 +11,44 @@ export function Chapter({ number, title, sub, children, id }: { number: string; 
     <section className="chapter fade-in" id={id} aria-labelledby={id ? `${id}-title` : undefined}>
       <div className="chapter-head">
         <span className="plate chapter-no" aria-hidden="true">{number}</span>
-        <h2 id={id ? `${id}-title` : undefined}>{title}</h2>
+        <h2 id={id ? `${id}-title` : undefined} tabIndex={-1}>{title}</h2>
         <p>{sub}</p>
       </div>
       {children}
     </section>
+  );
+}
+
+/** Where the visitor is in setup. A step they have already reached can be
+ *  returned to; one ahead of them cannot, so the order stays the order. */
+export function Progress({ steps, current, reachable, onStep }: { steps: string[]; current: number; reachable: number; onStep: (index: number) => void }) {
+  return (
+    <nav className="progress" aria-label="Setup steps">
+      <ol>
+        {steps.map((name, i) => (
+          <li key={name}>
+            <button type="button" className="progress-step" data-state={i === current ? 'current' : i < current ? 'done' : 'todo'} aria-current={i === current ? 'step' : undefined} disabled={i > reachable} onClick={() => onStep(i)}>
+              <span className="plate chapter-no">{String(i + 1).padStart(2, '0')}</span>
+              {name}
+            </button>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  );
+}
+
+/** Back and Next under a setup step. `hint` says why Next is not ready yet. */
+export function StepNav({ onBack, onNext, nextLabel = 'Next', canNext, hint, children }: { onBack?: () => void; onNext?: () => void; nextLabel?: string; canNext?: boolean; hint?: string | false; children?: ReactNode }) {
+  return (
+    <div className="step-nav">
+      <div className="step-nav-row">
+        {onBack ? <Button variant="ghost" onClick={onBack}>← Back</Button> : <span />}
+        {onNext && <Button disabled={!canNext} onClick={onNext}>{nextLabel} →</Button>}
+        {children}
+      </div>
+      {hint && <p className="muted step-nav-hint">{hint}</p>}
+    </div>
   );
 }
 

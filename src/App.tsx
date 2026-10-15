@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Button, Chapter } from './components/Kit';
+import { Button, Chapter, Progress, StepNav } from './components/Kit';
 import { LinkStep } from './components/LinkStep';
 import { PersonaStep } from './components/PersonaStep';
 import { Results } from './components/Results';
@@ -18,6 +18,10 @@ import { createGeminiModel } from './services/gemini';
 import { loadSettings, type Settings } from './services/settings';
 
 type Phase = 'setup' | 'running' | 'done';
+
+/** Setup is a wizard, one step on screen at a time, so nobody scrolls past a
+ *  step they had to fill in. */
+const SETUP_STEPS = ['Link prototype', 'Cast tester', 'Give a task'];
 
 const SAMPLE_PARAMETERS: PersonaParameters = { age: '65+', gender: 'female', employmentStatus: 'retired', techSavviness: 'beginner', income: 'middle', customDetails: 'wears reading glasses, new to smartphones' };
 const MAX_RUNS = 10;
@@ -51,6 +55,8 @@ export default function App() {
 
   // The run and its results
   const [phase, setPhase] = useState<Phase>('setup');
+  const [setupStep, setSetupStep] = useState(0);
+  const stepMoved = useRef(false);
   const [runIndex, setRunIndex] = useState(0);
   const [liveSteps, setLiveSteps] = useState<Step[]>([]);
   const [liveScreen, setLiveScreen] = useState<LiveScreen | null>(null);
@@ -113,6 +119,7 @@ export default function App() {
     setFlowIndex(null);
     setSample(false);
     setError(null);
+    setSetupStep(0);
     screensRef.current = null;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -195,6 +202,24 @@ export default function App() {
 
   const flow = prototype && flowIndex !== null ? prototype.flows[flowIndex] : null;
   const canRun = Boolean(prototype && flow && persona && model && challenge.trim());
+
+  // The furthest step the visitor may go to: the task needs a persona, and
+  // the persona needs a flow to test.
+  const reachable = !flow ? 0 : !persona ? 1 : 2;
+  const goToStep = (index: number) => {
+    setError(null);
+    stepMoved.current = true;
+    setSetupStep(Math.min(index, reachable));
+  };
+
+  // A new step starts at the top of the page, with focus on its heading so a
+  // screen reader hears where it landed.
+  useEffect(() => {
+    if (!stepMoved.current) return;
+    stepMoved.current = false;
+    window.scrollTo({ top: 0 });
+    document.getElementById(`${['link', 'cast', 'task'][setupStep]}-title`)?.focus({ preventScroll: true });
+  }, [setupStep]);
 
   const start = useCallback(async () => {
     if (!prototype || !flow || !persona || !model || !screensRef.current) return;
@@ -287,7 +312,9 @@ export default function App() {
 
         {error && <p className="plate flat error" role="alert">{error}</p>}
 
-        {phase === 'setup' && (
+        {phase === 'setup' && <Progress steps={SETUP_STEPS} current={setupStep} reachable={reachable} onStep={goToStep} />}
+
+        {phase === 'setup' && setupStep === 0 && (
           <Chapter id="link" number="01" title="Link your prototype" sub="Paste a Figma frame. The tool reads every screen and how they connect.">
             <LinkStep
               url={url}
@@ -304,11 +331,17 @@ export default function App() {
               flowIndex={flowIndex}
               onFlow={setFlowIndex}
             />
+            {prototype && (
+              <StepNav
+                onNext={() => goToStep(1)}
+                canNext={Boolean(flow)}
+                hint={!flow && prototype.flows.length > 0 && 'Select a prototype flow to continue.'}
+              />
+            )}
           </Chapter>
         )}
 
-        {prototype && prototype.flows.length > 0 && phase === 'setup' && (
-          <>
+        {prototype && prototype.flows.length > 0 && phase === 'setup' && setupStep === 1 && (
             <Chapter id="cast" number="02" title="Cast your tester" sub="Pick a ready-made persona, or build one of your own.">
               <PersonaStep
                 mode={personaMode}
@@ -325,8 +358,16 @@ export default function App() {
                 locked={locked}
                 sample={sample}
               />
+              <StepNav
+                onBack={() => goToStep(0)}
+                onNext={() => goToStep(2)}
+                canNext={Boolean(persona)}
+                hint={!persona && (generating ? 'Generating the persona…' : 'Generate the persona to continue.')}
+              />
             </Chapter>
+        )}
 
+        {prototype && prototype.flows.length > 0 && phase === 'setup' && setupStep === 2 && (
             <Chapter id="task" number="03" title="Give it a task" sub="Then watch it try, one screen at a time.">
               <div className="plate pad task">
                 <label style={{ display: 'grid', gap: 8 }}>
@@ -344,13 +385,13 @@ export default function App() {
                 <Button wide disabled={!canRun} onClick={start}>Run {runCount} Analysis {runCount === 1 ? 'Pass' : 'Passes'}</Button>
                 {!canRun && (
                   <p className="muted" style={{ fontSize: 14, textAlign: 'center' }}>
-                    {!flow ? 'Select a prototype flow above.' : !persona ? 'Generate the persona above first.' : !challenge.trim() ? 'Write a challenge for the persona.' : 'Add a Gemini API key in Settings.'}
+                    {!flow ? 'Go back and select a prototype flow.' : !persona ? 'Go back and generate the persona first.' : !challenge.trim() ? 'Write a challenge for the persona.' : 'Add a Gemini API key in Settings.'}
                   </p>
                 )}
                 {sample && <p className="notice">Sample mode replays a pre-written session for the sample persona, so the words do not change with the persona or challenge you pick. Add your keys in Settings to test for real.</p>}
               </div>
+              <StepNav onBack={() => goToStep(1)} />
             </Chapter>
-          </>
         )}
 
         {phase === 'running' && persona && (
@@ -387,6 +428,7 @@ export default function App() {
                 sample={sample}
                 onAgain={() => {
                   resetRun();
+                  window.scrollTo({ top: 0 });
                 }}
                 onReset={resetAll}
               />
